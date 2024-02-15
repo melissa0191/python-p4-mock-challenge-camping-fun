@@ -16,23 +16,19 @@ metadata = MetaData(naming_convention=convention)
 
 db = SQLAlchemy(metadata=metadata)
 
+class Activity(db.Model,SerializerMixin):
 
-class Activity(db.Model, SerializerMixin):
     __tablename__ = 'activities'
-
+    
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
-    difficulty = db.Column(db.Integer)
+    difficulty =db.Column(db.String)
 
-    # Add relationship
-    signups = db.relationship('Signup', back_populates='activity', cascade = 'all, delete')
-    
-    # Add serialization rules
-    serialize_rules = ('-signups.activity',)
-    
+    signups = db.relationship('Signup', back_populates = 'activity', cascade ='all, delete')
+    serialize_rules = ('-signups.activity', )
+
     def __repr__(self):
-        return f'<Activity {self.id}: {self.name}>'
-
+        return f'Activity {self.id}: {self.name} >' 
 
 class Camper(db.Model, SerializerMixin):
     __tablename__ = 'campers'
@@ -41,55 +37,47 @@ class Camper(db.Model, SerializerMixin):
     name = db.Column(db.String, nullable=False)
     age = db.Column(db.Integer)
 
-    # Add relationship
-    signups = db.relationship('Signup', back_populates='camper', cascade = 'all, delete')
+    signups = db.relationship('Signup', back_populates = 'camper', cascade = 'all, delete')
 
-    # Add serialization rules
-    serialize_rules = ('-signups.camper',)
-
-    # Add validation
+    serialize_rules = ('-signups.camper', )
+    #validation
     @validates('name', 'age')
     def validate_camper(self, key, value):
-        if key == 'name':
+        if key == 'name' :
+
             if not value:
-                raise ValueError('name must exist')
-            return value
+                raise ValueError('Camper must have a name')
+            return value 
         if key == 'age':
-            if not 8 <= value <= 18:
-                raise ValueError('no good age')
+            if not 8 <= value <=18:
+                raise ValueError('Age must be between 8 and 18')
             return value
-    
-    
     def __repr__(self):
-        return f'<Camper {self.id}: {self.name}>'
-
-
+        return f'Camper {self.id}: {self.name}: {self.age}>' 
+    
 class Signup(db.Model, SerializerMixin):
     __tablename__ = 'signups'
 
     id = db.Column(db.Integer, primary_key=True)
     time = db.Column(db.Integer)
-
-    # Add relationships
     activity_id = db.Column(db.Integer, db.ForeignKey('activities.id'))
     camper_id = db.Column(db.Integer, db.ForeignKey('campers.id'))
 
-    activity = db.relationship('Activity', back_populates='signups')
-    camper = db.relationship('Camper', back_populates='signups')
-    
-    # Add serialization rules
-    serialize_rules = ('-activity.signups', '-camper.signups')
 
-    
-    # Add validation
+    activity = db.relationship('Activity', back_populates = 'signups')
+    camper = db.relationship('Camper', back_populates = 'signups')
+
+    serialize_rules = ('-activity.signups','-camper.signups' )
+    #validation
     @validates('time')
     def validate_time(self, key, time):
-        if not 0<=time <=23:
+        if not 0 <= time <= 23:
+                
             raise ValueError('Invalid time')
-        return time
-    
+        return time 
+        
     def __repr__(self):
-        return f'<Signup {self.id}>'
-
-
-# add any models you may need.
+        return f'Signup {self.id}>' 
+    
+    
+                                 
